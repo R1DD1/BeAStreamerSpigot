@@ -62,16 +62,20 @@ public class Database implements Listener {
             if (playerExists(uuid) != true) {
                 PreparedStatement insert = plugin.getConnection()
                         .prepareStatement("INSERT INTO " + plugin.table
-                                + " (UUID,NAME,FOLLOWERS,MONEY,TOKENS,BOOST_FOLL,BOOST_MONEY, MAX_ENERGY,CUR_ENERGY) VALUES (?,?,?,?,?,?,?,?,?)");
+                                + " (UUID,NAME,FOLLOWERS,MONEY,TOKENS,BOOST_FOLL,BOOST_MONEY, MAX_ENERGY,CUR_ENERGY, ACT_VIDEOCARD, ACT_CORE, ACT_MB, EDUCATION) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
                 insert.setString(1, uuid.toString());
                 insert.setString(2, player.getName());
                 insert.setDouble(3, 0);
-                insert.setDouble(4,500);
+                insert.setDouble(4,100000);
                 insert.setDouble(5, 0);
                 insert.setDouble(6,1);
                 insert.setDouble(7,1);
                 insert.setDouble(8, 50);
                 insert.setDouble(9, 50);
+                insert.setString(10, "Не выбрана");
+                insert.setString(11, "Не выбрана");
+                insert.setString(12, "Не выбрана");
+                insert.setDouble(13, 0);
 
                 insert.executeUpdate();
 
@@ -89,6 +93,18 @@ public class Database implements Listener {
             PreparedStatement statement = plugin.getConnection()
                     .prepareStatement("UPDATE " + plugin.table + " SET " + arg + "=? WHERE UUID=?");
             statement.setDouble(1, followers);
+            statement.setString(2, uuid.toString());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateStringArgs(UUID uuid, String arg, String followers) {
+        try {
+            PreparedStatement statement = plugin.getConnection()
+                    .prepareStatement("UPDATE " + plugin.table + " SET " + arg + "=? WHERE UUID=?");
+            statement.setString(1, followers);
             statement.setString(2, uuid.toString());
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -114,6 +130,24 @@ public class Database implements Listener {
         }
 
         return 0;
+    }
+
+    public String getStringArgs(UUID uuid, String arg) {
+        try {
+            PreparedStatement statement = plugin.getConnection()
+                    .prepareStatement("SELECT * FROM " + plugin.table + " WHERE UUID=?");
+            statement.setString(1, uuid.toString());
+            ResultSet results = statement.executeQuery();
+            results.next();
+
+            String argValue = (results.getString(arg));
+
+            return argValue;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
 }
