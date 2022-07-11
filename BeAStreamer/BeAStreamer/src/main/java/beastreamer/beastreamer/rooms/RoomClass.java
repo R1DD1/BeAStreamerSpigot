@@ -60,7 +60,7 @@ public class RoomClass implements Listener {
 //        return inv;
 //    }
 
-    private int randomInt(int arg0) {
+    public int randomInt(int arg0) {
         int i = (int) (Math.random() * 36);
         return i;
     }
