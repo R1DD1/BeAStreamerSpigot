@@ -3,11 +3,14 @@ package beastreamer.beastreamer;
 
 import beastreamer.beastreamer.database.Database;
 import beastreamer.beastreamer.games.ArenaGame;
+import beastreamer.beastreamer.games.JustChattingClass;
+import beastreamer.beastreamer.games.RaceClass;
 import beastreamer.beastreamer.jobs.Education;
 import beastreamer.beastreamer.jobs.JobClass;
 import beastreamer.beastreamer.rooms.RoomClass;
 import beastreamer.beastreamer.rooms.ShopClass;
 import org.bukkit.*;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -100,6 +103,7 @@ public final class BeAStreamer extends JavaPlugin implements Listener {
 
                 shopInv.setItem(slotForMarket(i),methodForMarket(i));
 
+
             }
         },20, 20*60*60*8);
 
@@ -132,6 +136,16 @@ public final class BeAStreamer extends JavaPlugin implements Listener {
         educationWorld.generatorSettings("2;0;1;");
         educationWorld.createWorld();
 
+        WorldCreator justChattingWorld = new WorldCreator("justChattingWorld");
+        justChattingWorld.type(WorldType.FLAT);
+        justChattingWorld.generatorSettings("2;0;1;");
+        justChattingWorld.createWorld();
+
+        WorldCreator raceWorld = new WorldCreator("raceWorld");
+        raceWorld.type(WorldType.FLAT);
+        raceWorld.generatorSettings("2;0;1;");
+        raceWorld.createWorld();
+
 
 
         Logger log = Bukkit.getLogger();
@@ -143,6 +157,8 @@ public final class BeAStreamer extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new Database(), this);
         getServer().getPluginManager().registerEvents(new ShopClass(this), this);
         getServer().getPluginManager().registerEvents(new Education(this), this);
+        getServer().getPluginManager().registerEvents(new JustChattingClass(this), this);
+        getServer().getPluginManager().registerEvents(new RaceClass(this), this);
 
         getServer().getPluginManager().registerEvents(this, this);
 
@@ -227,9 +243,12 @@ public final class BeAStreamer extends JavaPlugin implements Listener {
     @EventHandler
     public void onClickNPC(PlayerInteractEntityEvent e){
         Player p = e.getPlayer();
-        if (e.getRightClicked().getCustomName().equals(ChatColor.YELLOW + "" +ChatColor.BOLD+ "Продавец")) {
-            p.openInventory(shopInv);
+        if (!(e.getRightClicked().getType().equals(EntityType.MINECART))){
+            if (e.getRightClicked().getCustomName().equals(ChatColor.YELLOW + "" +ChatColor.BOLD+ "Продавец")) {
+                p.openInventory(shopInv);
+            }
         }
+
     }
 
 

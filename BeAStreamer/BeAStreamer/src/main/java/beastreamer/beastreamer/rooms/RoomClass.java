@@ -342,10 +342,14 @@ public class RoomClass implements Listener {
         }
     }
 
+
     ////// START STREAM ////////////////////////////////////////////////////////////////////////
 
     @EventHandler
     public void startOfStream(InventoryClickEvent e) {
+
+        ItemStack justChatting = createItem(Material.CACTUS, "ДжастЧаттинг", ChatColor.BOLD);
+        ItemStack race = createItem(Material.MINECART, "Полоса препядствий", ChatColor.BOLD);
         ItemStack arena = createItem(Material.GOLDEN_APPLE, "ПВЕ", ChatColor.BOLD);
         Player p = (Player) e.getWhoClicked();
         if (e.getCurrentItem().equals(createItem(Material.EMERALD, "Начать стрим", ChatColor.GREEN))) {
@@ -403,8 +407,9 @@ public class RoomClass implements Listener {
                 p.closeInventory();
 
                 Inventory chooseThemeOfStream = Bukkit.createInventory(null, 18, "Выберите тему стрима");
-                addItemIntoInv(chooseThemeOfStream, 0, arena);
-
+                addItemIntoInv(chooseThemeOfStream, 1, arena);
+                chooseThemeOfStream.setItem(0, justChatting);
+                chooseThemeOfStream.setItem(4, race);
                 p.openInventory(chooseThemeOfStream);
 
 
@@ -422,6 +427,17 @@ public class RoomClass implements Listener {
                     }
                 }
             }
+        }
+
+        if (e.getCurrentItem().equals(justChatting)){
+            e.setCancelled(true);
+            Location loc = new Location(Bukkit.getWorld("justChattingWorld"), 0, 70, 0);
+            p.teleport(loc);
+        }
+        if (e.getCurrentItem().equals(race)){
+            e.setCancelled(true);
+            Location loc = new Location(Bukkit.getWorld("raceWorld"), 0, 70, 0);
+            p.teleport(loc);
         }
 
         if (arenaGame) {
@@ -451,6 +467,10 @@ public class RoomClass implements Listener {
 
     }
 
+//    @EventHandler
+//    public void dsds(PlayerInteractEvent e){
+//        e.getPlayer().getLocation().getBlock().setType(Material.DIRT);
+//    }
 
 
     /////// NET MARKET ///////////////////////////////////////////////////////////
@@ -478,13 +498,6 @@ public class RoomClass implements Listener {
             p.openInventory(webMarketInv);
         }
         if (e.getCurrentItem().equals(accessories)){
-
-            // VIDEOCARDS
-
-            // GT 1030
-
-
-
 
             p.openInventory(accessoriesInv);
         }

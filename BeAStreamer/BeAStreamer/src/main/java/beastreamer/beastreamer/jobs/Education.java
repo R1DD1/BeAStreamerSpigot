@@ -11,6 +11,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventException;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -59,31 +60,33 @@ public class Education implements Listener {
     }
 
     @EventHandler
-    public void  interactNPC(PlayerInteractEntityEvent e){
+    public void  interactNPC(PlayerInteractEntityEvent e) {
         Player p = e.getPlayer();
-        if(e.getRightClicked().getCustomName().equals(ChatColor.YELLOW + "" +ChatColor.BOLD+ "Учитель")) {
-            double educationLvl = database.getIntArgs(p.getUniqueId(), "EDUCATION");
-            educationInv.setItem((int) (educationLvl+9), new ItemStack(Material.STAINED_GLASS_PANE,1 ,(short) 5));
+        if (!(e.getRightClicked().getType().equals(EntityType.MINECART))){
+            if(e.getRightClicked().getCustomName().equals(ChatColor.YELLOW + "" +ChatColor.BOLD+ "Учитель")) {
+                double educationLvl = database.getIntArgs(p.getUniqueId(), "EDUCATION");
+                educationInv.setItem((int) (educationLvl+9), new ItemStack(Material.STAINED_GLASS_PANE,1 ,(short) 5));
 
-            for (int i=0;i<=5; i++){
-                ItemStack item = new ItemStack(Material.KNOWLEDGE_BOOK);
-                ItemMeta meta = item.getItemMeta();
-                meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', plugin.getConfig().getString("education."+i+".name")));
-                List<String> lore = plugin.getConfig().getStringList("education."+i+".lore");
-                List<String> coloredLore = new ArrayList<String>();
-                for (String s : lore) {
-                    coloredLore.add(ChatColor.translateAlternateColorCodes('&', s));
+                for (int i=0;i<=5; i++){
+                    ItemStack item = new ItemStack(Material.KNOWLEDGE_BOOK);
+                    ItemMeta meta = item.getItemMeta();
+                    meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', plugin.getConfig().getString("education."+i+".name")));
+                    List<String> lore = plugin.getConfig().getStringList("education."+i+".lore");
+                    List<String> coloredLore = new ArrayList<String>();
+                    for (String s : lore) {
+                        coloredLore.add(ChatColor.translateAlternateColorCodes('&', s));
+                    }
+                    meta.setLore(coloredLore);
+                    item.setItemMeta(meta);
+                    educationInv.setItem(i, item);
                 }
-                meta.setLore(coloredLore);
-                item.setItemMeta(meta);
-                educationInv.setItem(i, item);
+
+                ItemStack stat = roomClass.createItem(Material.PAPER, ("Нынешнее образование: "
+                        +ChatColor.translateAlternateColorCodes('&', plugin.getConfig().getString("education."+(int)educationLvl+".name"))), ChatColor.WHITE);
+                educationInv.setItem(26, stat);
+                p.openInventory(educationInv);
+
             }
-
-            ItemStack stat = roomClass.createItem(Material.PAPER, ("Нынешнее образование: "
-                    +ChatColor.translateAlternateColorCodes('&', plugin.getConfig().getString("education."+(int)educationLvl+".name"))), ChatColor.WHITE);
-            educationInv.setItem(26, stat);
-            p.openInventory(educationInv);
-
         }
     }
 
@@ -94,7 +97,7 @@ public class Education implements Listener {
     ArrayList<Integer> listOfDoubles = new ArrayList<Integer>();
 
     @EventHandler
-    public void clickEvent(InventoryClickEvent e){
+    public void clickEvent(InventoryClickEvent e) {
         Player p = (Player) e.getWhoClicked();
         if (e.getCurrentItem().getType().equals(Material.KNOWLEDGE_BOOK)){
             e.setCancelled(true);
