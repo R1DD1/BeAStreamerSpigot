@@ -11,14 +11,13 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerFishEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.event.player.PlayerQuitEvent;
+import java.util.Date;
 
 
 public class JobClass implements Listener {
@@ -44,20 +43,50 @@ public class JobClass implements Listener {
         p.sendMessage("Вы попали в мир РАБОТЫ ");
     }
 
+    //STOP WORLD//
+    @EventHandler
+    public void onExitToWorld(PlayerQuitEvent e)
+    {
+        switch (SwithProgrammerWork) {
+            case 5:
+                StopProgrammers(25, e.getPlayer());
+                break;
+            case 6:
+                StopProgrammers(50, e.getPlayer());
+                break;
+
+            case 7:
+                StopProgrammers(75, e.getPlayer());
+                break;
+
+            case 8:
+                StopProgrammers(100, e.getPlayer());
+                break;
+
+        }
+        Bukkit.getScheduler().cancelTask(taskToProgrammerWork);
+    }
+
+
     //VARIABLES
 
     ItemStack Work[] = Work();
     ItemStack BakerCraft[] = BakerCraft();
     ItemStack BakerItem[] = BakerItem();
+    int taskToProgrammerWork ;
     boolean RESPAWN_WEB = true;
 
     boolean  RandColorWool = true;
+    boolean isStartProgrammer = false;
+    Date dateStartProgrammer;
+    int SwithProgrammerWork;
     ItemStack RandColorTerracotta ;
     byte randBlock;
 
     float LocationTerracottaLBlock = 54;
 
     Block Gravelblock;
+    Location AFK;
 
 
     //METHODS
@@ -82,10 +111,7 @@ public class JobClass implements Listener {
         PLocation[2] = new Location(p.getWorld(), -11.5, 54.2, 1.5);
         PLocation[3] = new Location(p.getWorld(), -0.5, 53.2, -13.5);
         PLocation[4] = new Location(p.getWorld(), -19, 55.2, -15.0);
-        PLocation[5] = new Location(p.getWorld(), -0.5, 53.2, -13.5);
-        PLocation[6] = new Location(p.getWorld(), -0.5, 53.2, -13.5);
-        PLocation[7] = new Location(p.getWorld(), -0.5, 53.2, -13.5);
-        PLocation[8] = new Location(p.getWorld(), -0.5, 53.2, -13.5);
+
         return PLocation;
     }
 
@@ -136,6 +162,22 @@ public class JobClass implements Listener {
         return Item;
     }
 
+    public void StartProgrammers()
+    {
+        isStartProgrammer = true;
+        dateStartProgrammer = new Date();
+    }
+
+    public void StopProgrammers(int AmountPerSecond , Player p)
+    {
+        isStartProgrammer = false;
+        Date date = new Date();
+        long Second = (date.getTime()-dateStartProgrammer.getTime())/1013;
+
+        database.updateArgs(p.getUniqueId(), "MONEY", database.getIntArgs(p.getUniqueId(), "MONEY") + Math.abs(AmountPerSecond*Second));
+        p.sendMessage("Вы получили:"+AmountPerSecond*Second);
+    }
+
     //LOGIC//
 
     Inventory GoToWork;
@@ -166,9 +208,9 @@ public class JobClass implements Listener {
             if (e.getClickedInventory().getTitle() == GoToWork.getTitle()) {
                 Player p = (Player) e.getWhoClicked();
                 Location location[] = PlaceWork(p);
-                for (int i = 0; i < 9; i++) {
+                e.setCancelled(true);
+                for (int i = 0; i < 5; i++) {
                     if (e.getCurrentItem().getType().equals(Work[i].getType())) {
-                        e.setCancelled(true);
                         p.teleport(location[i]);
                         if (!p.getInventory().contains(HandOverToolID(i)) && HandOverToolID(i) != 0) {
                             p.getInventory().addItem(new ItemStack(HandOverToolID(i)));
@@ -176,12 +218,74 @@ public class JobClass implements Listener {
                         break;
                     }
                 }
-            }
-            return;
 
-    }
+                for(int i = 5; i < 9 ;i++) {
+                    if (e.getCurrentItem().getType().equals(Work[i].getType())) {
+                        SwithProgrammerWork = i;
+                        if (!isStartProgrammer) {
+                            StartProgrammers();
 
-    ///////////////////NOT WORK UPDATE INTERFACE//////////////////KEY ERROR ~?
+                            AFK =  p.getLocation();
+                             taskToProgrammerWork =   Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+                                @Override
+                                public void run() {
+                                    if(p.getLocation().getZ() == AFK.getZ() && p.getLocation().getX() == AFK.getX())
+                                    {
+                                        switch (SwithProgrammerWork) {
+                                            case 5:
+                                                StopProgrammers(25, ((Player) e.getWhoClicked()).getPlayer());
+                                                break;
+                                            case 6:
+                                                StopProgrammers(50, ((Player) e.getWhoClicked()).getPlayer());
+                                                break;
+
+                                            case 7:
+                                                StopProgrammers(75, ((Player) e.getWhoClicked()).getPlayer());
+                                                break;
+
+                                            case 8:
+                                                StopProgrammers(100, ((Player) e.getWhoClicked()).getPlayer());
+                                                break;
+
+                                        }
+                                        Bukkit.getScheduler().cancelTask(taskToProgrammerWork);
+
+                                    }
+
+                                    AFK =  p.getLocation();
+                                }
+                            },1200,1200);
+
+                        }
+                        else {
+                            switch (i) {
+                                case 5:
+                                    StopProgrammers(25, ((Player) e.getWhoClicked()).getPlayer());
+                                    break;
+                                case 6:
+                                    StopProgrammers(50, ((Player) e.getWhoClicked()).getPlayer());
+                                    break;
+
+                                case 7:
+                                    StopProgrammers(75, ((Player) e.getWhoClicked()).getPlayer());
+                                    break;
+
+                                case 8:
+                                    StopProgrammers(100, ((Player) e.getWhoClicked()).getPlayer());
+                                    break;
+
+                            }
+                            Bukkit.getScheduler().cancelTask(taskToProgrammerWork);
+                        }
+                        break;
+                    }
+                }
+
+                    }
+                return;
+                }
+
+
     @EventHandler
     public void Housekeeper(BlockBreakEvent block) {
         if (block.getBlock().getType() == Material.WEB && RESPAWN_WEB) {
